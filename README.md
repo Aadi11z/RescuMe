@@ -133,7 +133,7 @@ Scan the QR code with your Expo Go app or run on an emulator.
 
 ## Demo & Visualization
 
-- **Figma Prototype:** [Link to Figma or screenshots]
+- **Figma Prototype:** [https://www.figma.com/design/giXoV1yt4DmW0oSZ2FhLIm/RescuMe?node-id=0-1&t=TUEKrY2n2MdoQxG7-1]
 - **GitHub Repository:** [https://github.com/Aadi11z/RescuMe](https://github.com/Aadi11z/RescuMe)
 
 ---
@@ -146,7 +146,7 @@ In times of crisis and panic, RescuMe ensures everyone can get the help they nee
 
 ## License
 
-[MIT License](./LICENSE)
+[GNU GPL v3.0 License](./LICENSE)
 
 ---
 
