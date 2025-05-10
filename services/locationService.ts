@@ -1,16 +1,15 @@
-// services/locationService.ts
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import * as Location from 'expo-location';
 import { firebaseApp } from '../config/firebase';
 
 const db = getFirestore(firebaseApp);
 
-// For Stranded Users
+// Returns cleanup function for tracking
 export const startStrandedTracking = async (userId: string) => {
   const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== 'granted') return;
+  if (status !== 'granted') return () => {};
 
-  Location.watchPositionAsync(
+  const sub = await Location.watchPositionAsync(
     { accuracy: Location.Accuracy.High },
     (location) => {
       setDoc(doc(db, 'strandedUsers', userId), {
@@ -19,14 +18,15 @@ export const startStrandedTracking = async (userId: string) => {
       });
     }
   );
+
+  return () => sub.remove();
 };
 
-// For Rescue Teams
 export const startRescueTeamTracking = async (teamId: string) => {
   const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== 'granted') return;
+  if (status !== 'granted') return () => {};
 
-  Location.watchPositionAsync(
+  const sub = await Location.watchPositionAsync(
     { accuracy: Location.Accuracy.High },
     (location) => {
       setDoc(doc(db, 'rescueTeams', teamId), {
@@ -35,4 +35,6 @@ export const startRescueTeamTracking = async (teamId: string) => {
       });
     }
   );
+
+  return () => sub.remove();
 };

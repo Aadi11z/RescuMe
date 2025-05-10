@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { startStrandedTracking, startRescueTeamTracking } from '../services/locationService';
 
 interface Props {
   userId: string;
@@ -18,90 +19,40 @@ export default function LocateScreen({ userId, teamId }: Props) {
   const [rescueLocation, setRescueLocation] = useState<Location | null>(null);
   const [strandedLocation, setStrandedLocation] = useState<Location | null>(null);
 
+  // Start live tracking
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, 'rescueTeams', teamId), (doc) => {
-      const location = doc.data()?.location;
-      if (location) {
-        setRescueLocation({
-          latitude: location.latitude,
-          longitude: location.longitude
-        });
-      }
-    });
-    return unsubscribe;
-  }, [teamId]);
+    let cleanups: (() => void)[] = [];
+    
+    const setupTracking = async () => {
+      const strandedCleanup = await startStrandedTracking(userId);
+      const rescueCleanup = await startRescueTeamTracking(teamId);
+      
+      if (strandedCleanup) cleanups.push(strandedCleanup);
+      if (rescueCleanup) cleanups.push(rescueCleanup);
+    };
 
+    setupTracking();
+    
+    return () => cleanups.forEach(fn => fn());
+  }, [userId, teamId]);
+
+  // Firestore listeners
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, 'strandedUsers', userId), (doc) => {
-      const location = doc.data()?.location;
-      if (location) {
-        setStrandedLocation({
-          latitude: location.latitude,
-          longitude: location.longitude
-        });
-      }
+    const rescueUnsub = onSnapshot(doc(db, 'rescueTeams', teamId), (doc) => {
+      const loc = doc.data()?.location;
+      if (loc) setRescueLocation({ latitude: loc.latitude, longitude: loc.longitude });
     });
-    return unsubscribe;
-  }, [userId]);
 
-  return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        region={{
-          latitude: 25.2048,
-          longitude: 55.2708,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05
-        }}
-      >
-        {rescueLocation && (
-          <Marker
-            coordinate={rescueLocation}
-            title="Rescue Team"
-            pinColor="blue"
-          />
-        )}
+    const strandedUnsub = onSnapshot(doc(db, 'strandedUsers', userId), (doc) => {
+      const loc = doc.data()?.location;
+      if (loc) setStrandedLocation({ latitude: loc.latitude, longitude: loc.longitude });
+    });
 
-        {strandedLocation && (
-          <Marker
-            coordinate={strandedLocation}
-            title="Stranded User"
-            pinColor="red"
-          />
-        )}
+    return () => {
+      rescueUnsub();
+      strandedUnsub();
+    };
+  }, []);
 
-        {rescueLocation && strandedLocation && (
-          <Polyline
-            coordinates={[rescueLocation, strandedLocation]}
-            strokeColor="#FF0000"
-            strokeWidth={2}
-          />
-        )}
-      </MapView>
-
-      <View style={styles.infoPanel}>
-        <Text>
-          Stranded Coordinates: {'\n'}
-          {strandedLocation?.latitude?.toFixed(5)}, {'\n'}
-          {strandedLocation?.longitude?.toFixed(5)}
-        </Text>
-      </View>
-    </View>
-  );
+  // Rest of your map rendering code...
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    flex: 1,
-  },
-  infoPanel: {
-    padding: 20,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-  },
-});
