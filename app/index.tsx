@@ -10,7 +10,8 @@ const profileImage = { uri: 'https://placehold.co/100x100' }; // Replace with yo
 
 function HomeScreen({ navigation }: any) {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}
+    showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="menu" size={28} color="#fff" />
@@ -55,7 +56,7 @@ function CustomDrawerContent(props: any) {
     <DrawerContentScrollView {...props}>
       <View style={styles.drawerHeader}>
         <Image source={profileImage} style={styles.drawerImage} />
-        <Text style={styles.drawerName}>User Name</Text>
+        <Text style={styles.drawerName}></Text>
         <Text style={styles.drawerProfile}>View profile</Text>
       </View>
       <DrawerItem label="Notification" icon={() => <Icon name="bell" size={24} />} onPress={() => {}} />
