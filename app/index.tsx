@@ -11,7 +11,7 @@ const profileImage = { uri: 'https://placehold.co/100x100' }; // Replace with yo
 function HomeScreen({ navigation }: any) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}
-    showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false} >
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="menu" size={28} color="#fff" />
